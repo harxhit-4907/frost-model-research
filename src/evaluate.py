@@ -14,7 +14,10 @@ def get_classification_metrics(y_true, y_pred):
     f1 = f1_score(y_true, y_pred, zero_division=0)
     
     # Peirce Skill Score (True Positive Rate - False Positive Rate)
-    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    # labels=[0, 1] is required, not optional: without it, confusion_matrix
+    # returns a 1x1 matrix (and .ravel() crashes) whenever a batch happens
+    # to contain only one class -- e.g. a small fold with zero frost days.
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
     tpr = tp / (tp + fn) if (tp + fn) > 0 else 0
     fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
     peirce_skill = tpr - fpr
